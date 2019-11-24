@@ -1,25 +1,25 @@
-import me.ivmg.telegram.entities.Audio
-import me.ivmg.telegram.entities.CallbackQuery
-import me.ivmg.telegram.entities.Chat
-import me.ivmg.telegram.entities.ChatPhoto
-import me.ivmg.telegram.entities.Contact
-import me.ivmg.telegram.entities.Document
-import me.ivmg.telegram.entities.Game
-import me.ivmg.telegram.entities.Invoice
-import me.ivmg.telegram.entities.Location
-import me.ivmg.telegram.entities.Message
-import me.ivmg.telegram.entities.MessageEntity
-import me.ivmg.telegram.entities.PhotoSize
-import me.ivmg.telegram.entities.Update
-import me.ivmg.telegram.entities.User
-import me.ivmg.telegram.entities.Venue
-import me.ivmg.telegram.entities.Video
-import me.ivmg.telegram.entities.VideoNote
-import me.ivmg.telegram.entities.Voice
-import me.ivmg.telegram.entities.payments.PreCheckoutQuery
-import me.ivmg.telegram.entities.payments.ShippingQuery
-import me.ivmg.telegram.entities.payments.SuccessfulPayment
-import me.ivmg.telegram.entities.stickers.Sticker
+import com.mazekine.telegram.entities.Audio
+import com.mazekine.telegram.entities.CallbackQuery
+import com.mazekine.telegram.entities.Chat
+import com.mazekine.telegram.entities.ChatPhoto
+import com.mazekine.telegram.entities.Contact
+import com.mazekine.telegram.entities.Document
+import com.mazekine.telegram.entities.Game
+import com.mazekine.telegram.entities.Invoice
+import com.mazekine.telegram.entities.Location
+import com.mazekine.telegram.entities.Message
+import com.mazekine.telegram.entities.MessageEntity
+import com.mazekine.telegram.entities.PhotoSize
+import com.mazekine.telegram.entities.Update
+import com.mazekine.telegram.entities.User
+import com.mazekine.telegram.entities.Venue
+import com.mazekine.telegram.entities.Video
+import com.mazekine.telegram.entities.VideoNote
+import com.mazekine.telegram.entities.Voice
+import com.mazekine.telegram.entities.payments.PreCheckoutQuery
+import com.mazekine.telegram.entities.payments.ShippingQuery
+import com.mazekine.telegram.entities.payments.SuccessfulPayment
+import com.mazekine.telegram.entities.stickers.Sticker
 
 private const val ANY_UPDATE_ID = 3523523L
 

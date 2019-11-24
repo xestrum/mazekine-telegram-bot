@@ -1,0 +1,721 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "v1",
+    "title": "Mazekine.Api"
+  },
+  "paths": {
+    "/api/addresses/{currency}/{address}": {
+      "get": {
+        "tags": [
+          "Addresses"
+        ],
+        "summary": "Find contact by address.",
+        "operationId": "GetAddress",
+        "consumes": [],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "address",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "currency",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "wolfhunt",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "forceUpdate",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "default": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/AddressModel"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/ProblemDetails"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/ProblemDetails"
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "schema": {
+              "$ref": "#/definitions/ProblemDetails"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/ProblemDetails"
+            }
+          },
+          "429": {
+            "description": "Client Error",
+            "schema": {
+              "$ref": "#/definitions/ProblemDetails"
+            }
+          }
+        }
+      }
+    },
+    "/api/addresses/providers/image": {
+      "get": {
+        "tags": [
+          "Addresses"
+        ],
+        "summary": "Get image for provider.",
+        "operationId": "GetImage",
+        "consumes": [],
+        "produces": [
+          "image/x-icon"
+        ],
+        "parameters": [
+          {
+            "name": "wallet",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/disputes/transactions/{transactionId}/disputes": {
+      "post": {
+        "tags": [
+          "Disputes"
+        ],
+        "summary": "Create dispute.",
+        "operationId": "CreateDispute",
+        "consumes": [],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "transactionId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/DisputeModel"
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "schema": {
+              "$ref": "#/definitions/ProblemDetails"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/ProblemDetails"
+            }
+          },
+          "429": {
+            "description": "Client Error",
+            "schema": {
+              "$ref": "#/definitions/ProblemDetails"
+            }
+          }
+        }
+      }
+    },
+    "/api/disputes/{id}": {
+      "get": {
+        "tags": [
+          "Disputes"
+        ],
+        "summary": "Get dispute.",
+        "operationId": "Get",
+        "consumes": [],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/DisputeModel"
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "schema": {
+              "$ref": "#/definitions/ProblemDetails"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/ProblemDetails"
+            }
+          },
+          "429": {
+            "description": "Client Error",
+            "schema": {
+              "$ref": "#/definitions/ProblemDetails"
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/{secretId}": {
+      "get": {
+        "tags": [
+          "Profile"
+        ],
+        "summary": "Authorize by key.",
+        "operationId": "Auth",
+        "consumes": [],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "secretId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/AuthModel"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/ProblemDetails"
+            }
+          }
+        }
+      }
+    },
+    "/api/profile/balance": {
+      "get": {
+        "tags": [
+          "Profile"
+        ],
+        "summary": "Get current balance.",
+        "operationId": "Balance",
+        "consumes": [],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/BalanceModel"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/ProblemDetails"
+            }
+          }
+        }
+      }
+    },
+    "/api/profile/karma": {
+      "get": {
+        "tags": [
+          "Profile"
+        ],
+        "summary": "Get current karma.",
+        "operationId": "Karma",
+        "consumes": [],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/KarmaModel"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/ProblemDetails"
+            }
+          }
+        }
+      }
+    },
+    "/api/webhooks/example": {
+      "post": {
+        "tags": [
+          "Webhooks"
+        ],
+        "summary": "The example to demostrate request and response for webhook processing.",
+        "operationId": "ExamplePost",
+        "consumes": [
+          "application/json-patch+json",
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "model",
+            "in": "body",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/ExampleRequestModel"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/ExampleResponseModel"
+            }
+          }
+        }
+      }
+    },
+    "/api/webhooks/example/{currency}/{address}": {
+      "get": {
+        "tags": [
+          "Webhooks"
+        ],
+        "summary": "The example to demostrate request and response for webhook processing.",
+        "operationId": "ExampleGet",
+        "consumes": [],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "currency",
+            "in": "path",
+            "description": "The currency of checking address",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "address",
+            "in": "path",
+            "description": "The checking address",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/ExampleResponseModel"
+            }
+          }
+        }
+      }
+    },
+    "/api/webhooks/check": {
+      "post": {
+        "tags": [
+          "Webhooks"
+        ],
+        "summary": "Check provider response.",
+        "operationId": "Check",
+        "consumes": [
+          "application/json-patch+json",
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "model",
+            "in": "body",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/CheckRequestModel"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/CheckResponseModel"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "AddressModel": {
+      "type": "object",
+      "properties": {
+        "address": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "wallet": {
+          "$ref": "#/definitions/AddressWalletModel"
+        },
+        "owner": {
+          "$ref": "#/definitions/AddressOwnerModel"
+        },
+        "transaction": {
+          "$ref": "#/definitions/TransactionModel"
+        }
+      }
+    },
+    "AddressWalletModel": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "iconUrl": {
+          "type": "string"
+        }
+      }
+    },
+    "AddressOwnerModel": {
+      "type": "object",
+      "properties": {
+        "firstName": {
+          "description": "The first name of address owner.",
+          "type": "string"
+        },
+        "lastName": {
+          "description": "The last name of address owner.",
+          "type": "string"
+        },
+        "nameVerified": {
+          "description": "The status of name verification: NotVerified, VerifiedByWallet, VerifiedByMazekine.",
+          "type": "string"
+        },
+        "ownershipVerified": {
+          "description": "The status of address ownership verification: NotVerified, VerifiedByWallet, VerifiedByMazekine.",
+          "type": "string"
+        }
+      }
+    },
+    "TransactionModel": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "date": {
+          "type": "string"
+        },
+        "cost": {
+          "uniqueItems": false,
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CostModel"
+          }
+        },
+        "balanceAvailable": {
+          "uniqueItems": false,
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AmountModel"
+          }
+        },
+        "requestsAvailable": {
+          "format": "int32",
+          "type": "integer"
+        }
+      }
+    },
+    "CostModel": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        }
+      }
+    },
+    "AmountModel": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "format": "double",
+          "type": "number"
+        },
+        "currency": {
+          "type": "string"
+        }
+      }
+    },
+    "ProblemDetails": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "status": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "detail": {
+          "type": "string"
+        },
+        "instance": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {
+        "type": "object"
+      }
+    },
+    "DisputeModel": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "format": "uuid",
+          "description": "The ID of dispute.",
+          "type": "string"
+        },
+        "status": {
+          "description": "The status of dispute: New, InProgress, Confirmed, Rejected, Cancelled.",
+          "type": "string"
+        },
+        "transaction": {
+          "$ref": "#/definitions/TransactionModel",
+          "description": "The transaction of dispute."
+        }
+      }
+    },
+    "AuthModel": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "description": "Auth token.",
+          "type": "string"
+        },
+        "rateLimit": {
+          "format": "int32",
+          "description": "Rate limit in seconds.",
+          "type": "integer"
+        },
+        "expiredAt": {
+          "description": "When token will be expired: ISO format.",
+          "type": "string"
+        }
+      }
+    },
+    "BalanceModel": {
+      "type": "object",
+      "properties": {
+        "balance": {
+          "description": "The balances of currencies.",
+          "uniqueItems": false,
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/BalanceAmountModel"
+          }
+        },
+        "requests": {
+          "format": "int32",
+          "description": "The volume of all available requests.",
+          "type": "integer"
+        }
+      }
+    },
+    "BalanceAmountModel": {
+      "type": "object",
+      "properties": {
+        "activeValue": {
+          "format": "double",
+          "type": "number"
+        },
+        "totalValue": {
+          "format": "double",
+          "type": "number"
+        },
+        "currency": {
+          "type": "string"
+        }
+      }
+    },
+    "KarmaModel": {
+      "type": "object",
+      "properties": {
+        "karma": {
+          "format": "int32",
+          "description": "The value of karma.",
+          "type": "integer"
+        },
+        "status": {
+          "description": "The status of karma: ok, limited, blocked.",
+          "type": "string"
+        }
+      }
+    },
+    "ExampleRequestModel": {
+      "type": "object",
+      "properties": {
+        "address": {
+          "description": "The checking address.",
+          "type": "string",
+          "example": "1Sazfo21GfN2umKyBh2mPU53YC8QKzshf"
+        },
+        "currency": {
+          "description": "The currency of checking address.",
+          "type": "string",
+          "example": "BTC"
+        }
+      }
+    },
+    "ExampleResponseModel": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "description": "The ID of user in internal system.",
+          "type": "string"
+        },
+        "country": {
+          "description": "The country of user.",
+          "type": "string"
+        },
+        "firstName": {
+          "description": "The first name of user.",
+          "type": "string"
+        },
+        "lastName": {
+          "description": "The last name of user.",
+          "type": "string"
+        },
+        "addressCreatedDateUtc": {
+          "format": "date-time",
+          "description": "The date of address creation.",
+          "type": "string"
+        },
+        "isVerified": {
+          "description": "Is user verified or is user data its own.",
+          "type": "boolean"
+        }
+      }
+    },
+    "CheckRequestModel": {
+      "type": "object",
+      "properties": {
+        "requestUrl": {
+          "description": "Checking URL.",
+          "type": "string",
+          "example": "https://api.mazekine.com/api/webhooks/example/{currency}/{address}"
+        },
+        "address": {
+          "description": "The checking address.",
+          "type": "string",
+          "example": "1Sazfo21GfN2umKyBh2mPU53YC8QKzshf"
+        },
+        "currency": {
+          "description": "The checking crypto currency.",
+          "type": "string",
+          "example": "BTC"
+        }
+      }
+    },
+    "CheckResponseModel": {
+      "type": "object",
+      "properties": {
+        "isCorrect": {
+          "description": "Is setup correctly.",
+          "type": "boolean"
+        },
+        "errors": {
+          "description": "The errors during checking.",
+          "uniqueItems": false,
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "securityDefinitions": {
+    "Bearer": {
+      "name": "Authorization",
+      "in": "header",
+      "type": "apiKey",
+      "description": "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\""
+    }
+  },
+  "security": [
+    {
+      "Bearer": []
+    }
+  ]
+}

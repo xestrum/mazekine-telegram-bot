@@ -1,8 +1,8 @@
 package me.ivmg.echo
 
-import me.ivmg.telegram.bot
-import me.ivmg.telegram.dispatch
-import me.ivmg.telegram.dispatcher.text
+import com.mazekine.telegram.bot
+import com.mazekine.telegram.dispatch
+import com.mazekine.telegram.dispatcher.text
 
 fun main(args: Array<String>) {
 

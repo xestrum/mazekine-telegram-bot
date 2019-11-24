@@ -1,4 +1,4 @@
-group 'me.ivmg.telegram'
+group 'com.mazekine.telegram'
 version '1.0'
 
 buildscript {
