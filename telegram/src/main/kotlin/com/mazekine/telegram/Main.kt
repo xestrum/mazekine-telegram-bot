@@ -30,7 +30,7 @@ fun main(args: Array<String>) {
 
     val bot = bot {
 
-        token = "YOUR_API_KEY"
+        token = "1000920535:AAEyvxvwq7dpCySM_MsopmzuNZbOew1rb-E"
         timeout = 30
         logLevel = HttpLoggingInterceptor.Level.BODY
 
