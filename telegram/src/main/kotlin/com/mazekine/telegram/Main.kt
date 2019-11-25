@@ -1,5 +1,8 @@
 package com.mazekine.telegram
 
+import com.mazekine.client.apis.AddressesApi
+import com.mazekine.client.apis.ProfileApi
+import com.mazekine.client.models.AuthModel
 import com.mazekine.telegram.HandleUpdate
 import com.mazekine.telegram.bot
 import com.mazekine.telegram.dispatch
@@ -23,6 +26,7 @@ import com.mazekine.telegram.entities.ReplyKeyboardRemove
 import com.mazekine.telegram.entities.inlinequeryresults.InlineQueryResult
 import com.mazekine.telegram.entities.inlinequeryresults.InputMessageContent
 import com.mazekine.telegram.extensions.filters.Filter
+import com.mazekine.telegram.extensions.mazekine.MazekineClient
 import com.mazekine.telegram.network.fold
 import okhttp3.logging.HttpLoggingInterceptor
 
@@ -41,6 +45,37 @@ fun main(args: Array<String>) {
 
             message(Filter.Reply or Filter.Forward) { bot, update ->
                 bot.sendMessage(update.message!!.chat.id, text = "someone is replying or forwarding messages ...")
+            }
+
+            command("check") { bot, update ->
+
+                val strSecret: String = "1ff1f9e1-8d83-4d36-b207-6f8a4d918958"
+                val objProfile: ProfileApi = ProfileApi()
+                val txt: kotlin.String
+                val token: kotlin.String
+
+                /*val mzknResult = objProfile.auth("1ff1f9e1-8d83-4d36-b207-6f8a4d918958")
+                if(mzknResult is AuthModel) {
+                    token = mzknResult.token!!
+                    txt = token
+                } else {
+                    txt = "Unknown exception"
+                }*/
+
+                val objMazekineClient: MazekineClient = MazekineClient(
+                    "https://api.mazekine.com",
+                    strSecret
+                )
+
+                txt = objMazekineClient.getAuthToken()
+
+                val result = bot.sendMessage(chatId = update.message!!.chat.id, text = "I hear you! Result: $txt")
+
+                result.fold({
+
+                }, {
+
+                })
             }
 
             command("start") { bot, update ->
