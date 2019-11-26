@@ -34,14 +34,25 @@ class MazekineClient {
         forceUpdate: kotlin.Boolean = false
     ) : AddressModel? {
 
+        var result: String
+        val objAddressData: AddressModel
+
         try {
-            val objAddressData: AddressModel
-            objAddressData = ADDRESS_API?.getAddress(address, currency)
+            objAddressData = ADDRESS_API?.getAddress(address, currency, wolfhunt, forceUpdate)
+            /*with(objAddressData){
+                result = "_Address owner:_ " + owner?.firstName + " " + owner?.lastName + "\n"
+                result += "_Wallet name:_ " + wallet?.name
+                result += "_Transaction ID:_ " + transaction?.id
+                result += "_Transactions available_" + transaction?.requestsAvailable
+            }*/
         } catch(e: ClientException) {
-
+            println(e.message)
+            return null
         } catch(e: ServerException) {
-
+            println(e.message)
+            return null
         }
 
+        return objAddressData
     }
 }

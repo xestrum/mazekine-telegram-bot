@@ -51,7 +51,7 @@ fun main(args: Array<String>) {
 
                 val strSecret: String = "1ff1f9e1-8d83-4d36-b207-6f8a4d918958"
                 val objProfile: ProfileApi = ProfileApi()
-                val txt: kotlin.String
+                var txt: kotlin.String
                 val token: kotlin.String
 
                 /*val mzknResult = objProfile.auth("1ff1f9e1-8d83-4d36-b207-6f8a4d918958")
@@ -67,9 +67,21 @@ fun main(args: Array<String>) {
                     strSecret
                 )
 
-                txt = objMazekineClient.getAuthToken()
+                txt = objMazekineClient?.getAuthToken()
 
-                val result = bot.sendMessage(chatId = update.message!!.chat.id, text = "I hear you! Result: $txt")
+                var result = bot.sendMessage(chatId = update.message!!.chat.id, text = "I hear you! Result: $txt")
+
+                val addressData = objMazekineClient?.getAddressData(
+                    "1Sazfo21GfN2umKyBh2mPU53YC8QKzshf", "BTC"
+                )
+                with(addressData){
+                    txt = "_Address owner:_ " + this?.owner?.firstName + " " + this?.owner?.lastName + "\n"
+                    txt += "_Wallet name:_ " + this?.wallet?.name
+                    txt += "_Transaction ID:_ " + this?.transaction?.id
+                    txt += "_Transactions available_" + this?.transaction?.requestsAvailable
+                }
+
+                result = bot.sendMessage(chatId = update.message!!.chat.id, text = "Got some data for you!\n$txt")
 
                 result.fold({
 
