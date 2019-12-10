@@ -4,6 +4,7 @@ import com.mazekine.client.models.*
 import com.mazekine.client.apis.*
 import com.mazekine.client.infrastructure.*
 import java.lang.Exception
+import java.util.UUID
 
 class MazekineClient {
     private var authToken: kotlin.String? = null
@@ -11,13 +12,13 @@ class MazekineClient {
     private val ADDRESS_API: AddressesApi
     private val PROFILE_API: ProfileApi
 
-    constructor(apiAddress: kotlin.String?, secret: kotlin.String?) {
+    constructor(apiAddress: kotlin.String?, secret: String?) {
         MAZEKINE_API_PATH = apiAddress ?: "https://api.mazekine.com/v1"
         PROFILE_API = ProfileApi(MAZEKINE_API_PATH)
         ADDRESS_API = AddressesApi(MAZEKINE_API_PATH)
 
         try{
-            authToken = PROFILE_API.auth(secret ?: "").token
+            authToken = PROFILE_API.auth(java.util.UUID.fromString(secret) ?: java.util.UUID.fromString("")).token
         } catch (e: Exception) {
             println(e.message)
         }
@@ -38,13 +39,7 @@ class MazekineClient {
         val objAddressData: AddressModel
 
         try {
-            objAddressData = ADDRESS_API?.getAddress(address, currency, wolfhunt, forceUpdate)
-            /*with(objAddressData){
-                result = "_Address owner:_ " + owner?.firstName + " " + owner?.lastName + "\n"
-                result += "_Wallet name:_ " + wallet?.name
-                result += "_Transaction ID:_ " + transaction?.id
-                result += "_Transactions available_" + transaction?.requestsAvailable
-            }*/
+            objAddressData = ADDRESS_API?.getAddress(address, currency, wolfhunt, forceUpdate, this.authToken)
         } catch(e: ClientException) {
             println(e.message)
             return null

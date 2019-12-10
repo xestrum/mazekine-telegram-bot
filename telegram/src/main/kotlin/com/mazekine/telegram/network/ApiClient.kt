@@ -27,6 +27,7 @@ import com.mazekine.telegram.entities.stickers.MaskPosition
 import com.mazekine.telegram.entities.stickers.StickerSet
 import com.mazekine.telegram.network.adapter.InlineQueryResultAdapter
 import okhttp3.MediaType
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody
@@ -35,14 +36,14 @@ import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-private val PLAIN_TEXT_MIME = MediaType.parse("text/plain")
-private val APPLICATION_JSON_MIME = MediaType.parse("application/json")
+private val PLAIN_TEXT_MIME = "text/plain".toMediaTypeOrNull()
+private val APPLICATION_JSON_MIME = "application/json".toMediaTypeOrNull()
 
 private fun convertString(text: String) = RequestBody.create(PLAIN_TEXT_MIME, text)
 private fun convertJson(text: String) = RequestBody.create(APPLICATION_JSON_MIME, text)
 
 private fun convertFile(name: String, file: SystemFile, mimeType: String? = null): MultipartBody.Part {
-    val mediaType = (mimeType ?: Files.probeContentType(file.toPath()))?.let { MediaType.parse(it) }
+    val mediaType = (mimeType ?: Files.probeContentType(file.toPath()))?.let { it.toMediaTypeOrNull() }
     val requestBody = RequestBody.create(mediaType, file)
 
     return MultipartBody.Part.createFormData(name, file.name, requestBody)
@@ -53,7 +54,7 @@ private fun convertBytes(
     bytes: ByteArray,
     mimeType: String? = null
 ): MultipartBody.Part {
-    val mediaType = mimeType?.let { MediaType.parse(it) }
+    val mediaType = mimeType?.let { it.toMediaTypeOrNull() }
     val requestBody = RequestBody.create(mediaType, bytes)
 
     return MultipartBody.Part.createFormData(name, name, requestBody)

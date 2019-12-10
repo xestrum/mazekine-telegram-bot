@@ -14,85 +14,107 @@ package com.mazekine.client.apis
 import com.mazekine.client.models.AddressModel
 import com.mazekine.client.models.ProblemDetails
 
-import com.mazekine.client.infrastructure.*
+import com.mazekine.client.infrastructure.ApiClient
+import com.mazekine.client.infrastructure.ClientException
+import com.mazekine.client.infrastructure.ClientError
+import com.mazekine.client.infrastructure.ServerException
+import com.mazekine.client.infrastructure.ServerError
+import com.mazekine.client.infrastructure.MultiValueMap
+import com.mazekine.client.infrastructure.RequestConfig
+import com.mazekine.client.infrastructure.RequestMethod
+import com.mazekine.client.infrastructure.ResponseType
+import com.mazekine.client.infrastructure.Success
+import com.mazekine.client.infrastructure.toMultiValue
 
-class AddressesApi(basePath: kotlin.String = "https://api.mazekine.com") : ApiClient(basePath) {
+class AddressesApi(basePath: kotlin.String = "http://localhost") : ApiClient(basePath) {
 
     /**
-    * Find contact by address.
-    * 
-    * @param address  
-    * @param currency  
-    * @param wolfhunt  (optional, default to false)
-    * @param forceUpdate  (optional, default to false)
-    * @return AddressModel
-    */
+     * Find contact by address.
+     *
+     * @param address
+     * @param currency
+     * @param wolfhunt  (optional, default to false)
+     * @param forceUpdate  (optional, default to false)
+     * @return AddressModel
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
     @Suppress("UNCHECKED_CAST")
-    fun getAddress(address: kotlin.String, currency: kotlin.String, wolfhunt: kotlin.Boolean, forceUpdate: kotlin.Boolean) : AddressModel {
+    @Throws(UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    fun getAddress(
+        address: kotlin.String,
+        currency: kotlin.String,
+        wolfhunt: kotlin.Boolean?,
+        forceUpdate: kotlin.Boolean?,
+        authToken: kotlin.String?) : AddressModel {
         val localVariableBody: kotlin.Any? = null
-        val localVariableQuery: MultiValueMap = mapOf("wolfhunt" to listOf("$wolfhunt"), "forceUpdate" to listOf("$forceUpdate"))
-        
-        val contentHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf()
-        val acceptsHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf("Accept" to "application/json")
-        val localVariableHeaders: kotlin.collections.MutableMap<kotlin.String,kotlin.String> = mutableMapOf()
-        localVariableHeaders.putAll(contentHeaders)
-        localVariableHeaders.putAll(acceptsHeaders)
-        
+        val localVariableQuery: MultiValueMap = mutableMapOf<kotlin.String, List<kotlin.String>>()
+            .apply {
+                if (wolfhunt != null) {
+                    put("wolfhunt", listOf(wolfhunt.toString()))
+                }
+                if (forceUpdate != null) {
+                    put("forceUpdate", listOf(forceUpdate.toString()))
+                }
+            }
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf("Authorization" to "Bearer $authToken")
         val localVariableConfig = RequestConfig(
             RequestMethod.GET,
             "/api/addresses/{currency}/{address}".replace("{"+"address"+"}", "$address").replace("{"+"currency"+"}", "$currency"),
             query = localVariableQuery,
             headers = localVariableHeaders
         )
-        val response = request<AddressModel>(
+        val localVarResponse = request<AddressModel>(
             localVariableConfig,
             localVariableBody
         )
 
-        return when (response.responseType) {
-            ResponseType.Success -> (response as Success<*>).data as AddressModel
-            ResponseType.Informational -> TODO()
-            ResponseType.Redirection -> TODO()
-            ResponseType.ClientError -> throw ClientException((response as ClientError<*>).body as? String ?: "Client error")
-            ResponseType.ServerError -> throw ServerException((response as ServerError<*>).message ?: "Server error")
-            else -> throw kotlin.IllegalStateException("Undefined ResponseType.")
+        return when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as AddressModel
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> throw ClientException((localVarResponse as ClientError<*>).body as? String ?: "Client error")
+            ResponseType.ServerError -> throw ServerException((localVarResponse as ServerError<*>).message ?: "Server error")
         }
     }
 
     /**
-    * Get image for provider.
-    * 
-    * @param wallet  (optional)
-    * @return void
-    */
-    fun getImage(wallet: kotlin.String) : Unit {
+     * Get image for provider.
+     *
+     * @param wallet  (optional)
+     * @return void
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
+    @Throws(UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    fun getImage(wallet: kotlin.String?) : Unit {
         val localVariableBody: kotlin.Any? = null
-        val localVariableQuery: MultiValueMap = mapOf("wallet" to listOf("$wallet"))
-        
-        val contentHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf()
-        val acceptsHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf("Accept" to "image/x-icon")
-        val localVariableHeaders: kotlin.collections.MutableMap<kotlin.String,kotlin.String> = mutableMapOf()
-        localVariableHeaders.putAll(contentHeaders)
-        localVariableHeaders.putAll(acceptsHeaders)
-        
+        val localVariableQuery: MultiValueMap = mutableMapOf<kotlin.String, List<kotlin.String>>()
+            .apply {
+                if (wallet != null) {
+                    put("wallet", listOf(wallet.toString()))
+                }
+            }
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
         val localVariableConfig = RequestConfig(
             RequestMethod.GET,
             "/api/addresses/providers/image",
             query = localVariableQuery,
             headers = localVariableHeaders
         )
-        val response = request<Unit>(
+        val localVarResponse = request<Any?>(
             localVariableConfig,
             localVariableBody
         )
 
-        return when (response.responseType) {
+        return when (localVarResponse.responseType) {
             ResponseType.Success -> Unit
-            ResponseType.Informational -> TODO()
-            ResponseType.Redirection -> TODO()
-            ResponseType.ClientError -> throw ClientException((response as ClientError<*>).body as? String ?: "Client error")
-            ResponseType.ServerError -> throw ServerException((response as ServerError<*>).message ?: "Server error")
-            else -> throw kotlin.IllegalStateException("Undefined ResponseType.")
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> throw ClientException((localVarResponse as ClientError<*>).body as? String ?: "Client error")
+            ResponseType.ServerError -> throw ServerException((localVarResponse as ServerError<*>).message ?: "Server error")
         }
     }
 

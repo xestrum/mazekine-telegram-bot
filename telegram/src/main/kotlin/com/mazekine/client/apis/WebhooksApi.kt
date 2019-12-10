@@ -16,122 +16,123 @@ import com.mazekine.client.models.CheckResponseModel
 import com.mazekine.client.models.ExampleRequestModel
 import com.mazekine.client.models.ExampleResponseModel
 
-import com.mazekine.client.infrastructure.*
+import com.mazekine.client.infrastructure.ApiClient
+import com.mazekine.client.infrastructure.ClientException
+import com.mazekine.client.infrastructure.ClientError
+import com.mazekine.client.infrastructure.ServerException
+import com.mazekine.client.infrastructure.ServerError
+import com.mazekine.client.infrastructure.MultiValueMap
+import com.mazekine.client.infrastructure.RequestConfig
+import com.mazekine.client.infrastructure.RequestMethod
+import com.mazekine.client.infrastructure.ResponseType
+import com.mazekine.client.infrastructure.Success
+import com.mazekine.client.infrastructure.toMultiValue
 
-class WebhooksApi(basePath: kotlin.String = "https://api.mazekine.com") : ApiClient(basePath) {
+class WebhooksApi(basePath: kotlin.String = "http://localhost") : ApiClient(basePath) {
 
     /**
-    * Check provider response.
-    * 
-    * @param model  (optional)
-    * @return CheckResponseModel
-    */
+     * Check provider response.
+     *
+     * @param model  (optional)
+     * @return CheckResponseModel
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
     @Suppress("UNCHECKED_CAST")
-    fun check(model: CheckRequestModel) : CheckResponseModel {
+    @Throws(UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    fun check(model: CheckRequestModel?) : CheckResponseModel {
         val localVariableBody: kotlin.Any? = model
-        val localVariableQuery: MultiValueMap = mapOf()
-        
-        val contentHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf()
-        val acceptsHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf("Accept" to "application/json")
-        val localVariableHeaders: kotlin.collections.MutableMap<kotlin.String,kotlin.String> = mutableMapOf()
-        localVariableHeaders.putAll(contentHeaders)
-        localVariableHeaders.putAll(acceptsHeaders)
-        
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
         val localVariableConfig = RequestConfig(
             RequestMethod.POST,
             "/api/webhooks/check",
             query = localVariableQuery,
             headers = localVariableHeaders
         )
-        val response = request<CheckResponseModel>(
+        val localVarResponse = request<CheckResponseModel>(
             localVariableConfig,
             localVariableBody
         )
 
-        return when (response.responseType) {
-            ResponseType.Success -> (response as Success<*>).data as CheckResponseModel
-            ResponseType.Informational -> TODO()
-            ResponseType.Redirection -> TODO()
-            ResponseType.ClientError -> throw ClientException((response as ClientError<*>).body as? String ?: "Client error")
-            ResponseType.ServerError -> throw ServerException((response as ServerError<*>).message ?: "Server error")
-            else -> throw kotlin.IllegalStateException("Undefined ResponseType.")
+        return when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as CheckResponseModel
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> throw ClientException((localVarResponse as ClientError<*>).body as? String ?: "Client error")
+            ResponseType.ServerError -> throw ServerException((localVarResponse as ServerError<*>).message ?: "Server error")
         }
     }
 
     /**
-    * The example to demostrate request and response for webhook processing.
-    * 
-    * @param currency The currency of checking address 
-    * @param address The checking address 
-    * @return ExampleResponseModel
-    */
+     * The example to demostrate request and response for webhook processing.
+     *
+     * @param currency The currency of checking address
+     * @param address The checking address
+     * @return ExampleResponseModel
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
     @Suppress("UNCHECKED_CAST")
+    @Throws(UnsupportedOperationException::class, ClientException::class, ServerException::class)
     fun exampleGet(currency: kotlin.String, address: kotlin.String) : ExampleResponseModel {
         val localVariableBody: kotlin.Any? = null
-        val localVariableQuery: MultiValueMap = mapOf()
-        
-        val contentHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf()
-        val acceptsHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf("Accept" to "application/json")
-        val localVariableHeaders: kotlin.collections.MutableMap<kotlin.String,kotlin.String> = mutableMapOf()
-        localVariableHeaders.putAll(contentHeaders)
-        localVariableHeaders.putAll(acceptsHeaders)
-        
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
         val localVariableConfig = RequestConfig(
             RequestMethod.GET,
             "/api/webhooks/example/{currency}/{address}".replace("{"+"currency"+"}", "$currency").replace("{"+"address"+"}", "$address"),
             query = localVariableQuery,
             headers = localVariableHeaders
         )
-        val response = request<ExampleResponseModel>(
+        val localVarResponse = request<ExampleResponseModel>(
             localVariableConfig,
             localVariableBody
         )
 
-        return when (response.responseType) {
-            ResponseType.Success -> (response as Success<*>).data as ExampleResponseModel
-            ResponseType.Informational -> TODO()
-            ResponseType.Redirection -> TODO()
-            ResponseType.ClientError -> throw ClientException((response as ClientError<*>).body as? String ?: "Client error")
-            ResponseType.ServerError -> throw ServerException((response as ServerError<*>).message ?: "Server error")
-            else -> throw kotlin.IllegalStateException("Undefined ResponseType.")
+        return when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as ExampleResponseModel
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> throw ClientException((localVarResponse as ClientError<*>).body as? String ?: "Client error")
+            ResponseType.ServerError -> throw ServerException((localVarResponse as ServerError<*>).message ?: "Server error")
         }
     }
 
     /**
-    * The example to demostrate request and response for webhook processing.
-    * 
-    * @param model  (optional)
-    * @return ExampleResponseModel
-    */
+     * The example to demostrate request and response for webhook processing.
+     *
+     * @param model  (optional)
+     * @return ExampleResponseModel
+     * @throws UnsupportedOperationException If the API returns an informational or redirection response
+     * @throws ClientException If the API returns a client error response
+     * @throws ServerException If the API returns a server error response
+     */
     @Suppress("UNCHECKED_CAST")
-    fun examplePost(model: ExampleRequestModel) : ExampleResponseModel {
+    @Throws(UnsupportedOperationException::class, ClientException::class, ServerException::class)
+    fun examplePost(model: ExampleRequestModel?) : ExampleResponseModel {
         val localVariableBody: kotlin.Any? = model
-        val localVariableQuery: MultiValueMap = mapOf()
-        
-        val contentHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf()
-        val acceptsHeaders: kotlin.collections.Map<kotlin.String,kotlin.String> = mapOf("Accept" to "application/json")
-        val localVariableHeaders: kotlin.collections.MutableMap<kotlin.String,kotlin.String> = mutableMapOf()
-        localVariableHeaders.putAll(contentHeaders)
-        localVariableHeaders.putAll(acceptsHeaders)
-        
+        val localVariableQuery: MultiValueMap = mutableMapOf()
+        val localVariableHeaders: MutableMap<String, String> = mutableMapOf()
         val localVariableConfig = RequestConfig(
             RequestMethod.POST,
             "/api/webhooks/example",
             query = localVariableQuery,
             headers = localVariableHeaders
         )
-        val response = request<ExampleResponseModel>(
+        val localVarResponse = request<ExampleResponseModel>(
             localVariableConfig,
             localVariableBody
         )
 
-        return when (response.responseType) {
-            ResponseType.Success -> (response as Success<*>).data as ExampleResponseModel
-            ResponseType.Informational -> TODO()
-            ResponseType.Redirection -> TODO()
-            ResponseType.ClientError -> throw ClientException((response as ClientError<*>).body as? String ?: "Client error")
-            ResponseType.ServerError -> throw ServerException((response as ServerError<*>).message ?: "Server error")
-            else -> throw kotlin.IllegalStateException("Undefined ResponseType.")
+        return when (localVarResponse.responseType) {
+            ResponseType.Success -> (localVarResponse as Success<*>).data as ExampleResponseModel
+            ResponseType.Informational -> throw UnsupportedOperationException("Client does not support Informational responses.")
+            ResponseType.Redirection -> throw UnsupportedOperationException("Client does not support Redirection responses.")
+            ResponseType.ClientError -> throw ClientException((localVarResponse as ClientError<*>).body as? String ?: "Client error")
+            ResponseType.ServerError -> throw ServerException((localVarResponse as ServerError<*>).message ?: "Server error")
         }
     }
 

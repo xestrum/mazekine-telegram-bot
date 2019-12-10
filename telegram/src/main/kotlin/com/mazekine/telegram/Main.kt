@@ -28,6 +28,11 @@ import com.mazekine.telegram.entities.inlinequeryresults.InputMessageContent
 import com.mazekine.telegram.extensions.filters.Filter
 import com.mazekine.telegram.extensions.mazekine.MazekineClient
 import com.mazekine.telegram.network.fold
+import com.mazekine.telegram.types.ContextButtons
+import com.mazekine.telegram.types.ContextButtons.ACCOUNT
+import com.mazekine.telegram.types.ContextButtons.CHECK_ADDRESS
+import com.mazekine.telegram.types.ContextButtons.MY_ADDRESSES
+import com.mazekine.telegram.types.ContextButtons.START
 import okhttp3.logging.HttpLoggingInterceptor
 
 fun main(args: Array<String>) {
@@ -54,14 +59,6 @@ fun main(args: Array<String>) {
                 var txt: kotlin.String
                 val token: kotlin.String
 
-                /*val mzknResult = objProfile.auth("1ff1f9e1-8d83-4d36-b207-6f8a4d918958")
-                if(mzknResult is AuthModel) {
-                    token = mzknResult.token!!
-                    txt = token
-                } else {
-                    txt = "Unknown exception"
-                }*/
-
                 val objMazekineClient: MazekineClient = MazekineClient(
                     "https://api.mazekine.com",
                     strSecret
@@ -69,19 +66,21 @@ fun main(args: Array<String>) {
 
                 txt = objMazekineClient?.getAuthToken()
 
-                var result = bot.sendMessage(chatId = update.message!!.chat.id, text = "I hear you! Result: $txt")
-
                 val addressData = objMazekineClient?.getAddressData(
                     "1Sazfo21GfN2umKyBh2mPU53YC8QKzshf", "BTC"
                 )
                 with(addressData){
-                    txt = "_Address owner:_ " + this?.owner?.firstName + " " + this?.owner?.lastName + "\n"
-                    txt += "_Wallet name:_ " + this?.wallet?.name
-                    txt += "_Transaction ID:_ " + this?.transaction?.id
-                    txt += "_Transactions available_" + this?.transaction?.requestsAvailable
+                    txt = "*Address owner:* " + this?.owner?.firstName + " " + this?.owner?.lastName +
+                        "\n*Wallet name:* " + this?.wallet?.name +
+                        "\n*Transaction ID:* " + this?.transaction?.id +
+                        "\n*Transactions available: *" + this?.transaction?.requestsAvailable
                 }
 
-                result = bot.sendMessage(chatId = update.message!!.chat.id, text = "Got some data for you!\n$txt")
+                var result = bot.sendMessage(
+                    chatId = update.message!!.chat.id,
+                    text = "Got some data for you!\n\n$txt",
+                    parseMode = MARKDOWN
+                )
 
                 result.fold({
 
@@ -92,13 +91,15 @@ fun main(args: Array<String>) {
 
             command("start") { bot, update ->
 
-                val result = bot.sendMessage(chatId = update.message!!.chat.id, text = "Bot started")
+                val chatId = update.message?.chat?.id ?: return@command
 
-                result.fold({
-                    // do something here with the response
-                }, {
-                    // do something with the error
-                })
+                val keyboardMarkup = KeyboardReplyMarkup(keyboard = generateUsersButton(START), resizeKeyboard = true)
+                bot.sendMessage(
+                    chatId = chatId,
+                    text = "Welcome to Mazekine!\n\n" +
+                           "Tap Check address button below to get details on any blockchain address \uD83D\uDC47",
+                    replyMarkup = keyboardMarkup)
+
             }
 
             command("hello") { bot, update ->
@@ -159,6 +160,26 @@ fun main(args: Array<String>) {
                 bot.sendMessage(chatId = update.message!!.chat.id, text = "Pong")
             }
 
+            text("\uD83D\uDD0D Check address"){bot, update ->
+                val chatId = update.message?.chat?.id ?: return@text
+
+                val keyboardMarkup = KeyboardReplyMarkup(keyboard = generateUsersButton(CHECK_ADDRESS), resizeKeyboard = true)
+                bot.sendMessage(
+                    chatId = chatId,
+                    text = "Select coin ticker from the list or type it in the field below",
+                    replyMarkup = keyboardMarkup)
+            }
+
+            text("↩️ Back to main screen"){bot, update ->
+                val chatId = update.message?.chat?.id ?: return@text
+
+                val keyboardMarkup = KeyboardReplyMarkup(keyboard = generateUsersButton(START), resizeKeyboard = true)
+                bot.sendMessage(
+                    chatId = chatId,
+                    text = "Tap Check address button below to get details on any blockchain address \uD83D\uDC47",
+                    replyMarkup = keyboardMarkup)
+            }
+
             location { bot, update, location ->
                 val chatId = update.message?.chat?.id ?: return@location
                 bot.sendMessage(
@@ -179,6 +200,11 @@ fun main(args: Array<String>) {
 
             channel { bot, update ->
                 // Handle channel update
+
+                bot.sendMessage(
+                    chatId = update.message!!.chat.id,
+                    text = "Something happened"
+                )
             }
 
             inlineQuery { bot, inlineQuery ->
@@ -214,11 +240,33 @@ fun main(args: Array<String>) {
     bot.startPolling()
 }
 
-fun generateUsersButton(): List<List<KeyboardButton>> {
-    return listOf(
+fun generateUsersButton(context: ContextButtons = START): List<List<KeyboardButton>> {
+
+    val result: List<List<KeyboardButton>>
+
+    result = when(context){
+        START -> listOf(
+            listOf(
+                KeyboardButton("🔍 Check address")
+            ),
+            listOf(
+                KeyboardButton("My addresses"),
+                KeyboardButton("Account")
+            )
+        )
+        CHECK_ADDRESS, MY_ADDRESSES, ACCOUNT -> listOf(
+            listOf(
+                KeyboardButton("↩️ Back to main screen")
+            )
+        )
+        else -> TODO()
+    }
+
+    return result
+    /*listOf(
         listOf(KeyboardButton("Request location (not supported on desktop)", requestLocation = true)),
         listOf(KeyboardButton("Request contact", requestContact = true))
-    )
+    )*/
 }
 
 fun createAlertCallbackQueryHandler(handler: HandleUpdate): CallbackQueryHandler {
