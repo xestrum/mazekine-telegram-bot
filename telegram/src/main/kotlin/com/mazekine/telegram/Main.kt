@@ -1,11 +1,6 @@
 package com.mazekine.telegram
 
-import com.mazekine.client.apis.AddressesApi
 import com.mazekine.client.apis.ProfileApi
-import com.mazekine.client.models.AuthModel
-import com.mazekine.telegram.HandleUpdate
-import com.mazekine.telegram.bot
-import com.mazekine.telegram.dispatch
 import com.mazekine.telegram.dispatcher.callbackQuery
 import com.mazekine.telegram.dispatcher.channel
 import com.mazekine.telegram.dispatcher.command
@@ -25,15 +20,20 @@ import com.mazekine.telegram.entities.ParseMode.MARKDOWN
 import com.mazekine.telegram.entities.ReplyKeyboardRemove
 import com.mazekine.telegram.entities.inlinequeryresults.InlineQueryResult
 import com.mazekine.telegram.entities.inlinequeryresults.InputMessageContent
+import com.mazekine.telegram.entities.payments.InvoicePhotoDetail
 import com.mazekine.telegram.extensions.filters.Filter
 import com.mazekine.telegram.extensions.mazekine.MazekineClient
+import com.mazekine.telegram.logics.entities.BotContext
 import com.mazekine.telegram.network.fold
-import com.mazekine.telegram.types.ContextButtons
-import com.mazekine.telegram.types.ContextButtons.ACCOUNT
-import com.mazekine.telegram.types.ContextButtons.CHECK_ADDRESS
-import com.mazekine.telegram.types.ContextButtons.MY_ADDRESSES
-import com.mazekine.telegram.types.ContextButtons.START
+import com.mazekine.telegram.types.ContextButtonsContext
+import com.mazekine.telegram.types.ContextButtonsContext.ACCOUNT
+import com.mazekine.telegram.types.ContextButtonsContext.CHECK_ADDRESS
+import com.mazekine.telegram.types.ContextButtonsContext.MY_ADDRESSES
+import com.mazekine.telegram.types.ContextButtonsContext.START
+import com.mazekine.telegram.types.InlineButtonsContext
+import com.mazekine.telegram.types.InlineButtonsContext.TICKER_SELECTION
 import okhttp3.logging.HttpLoggingInterceptor
+
 
 fun main(args: Array<String>) {
 
@@ -97,8 +97,9 @@ fun main(args: Array<String>) {
                 bot.sendMessage(
                     chatId = chatId,
                     text = "Welcome to Mazekine!\n\n" +
-                           "Tap Check address button below to get details on any blockchain address \uD83D\uDC47",
-                    replyMarkup = keyboardMarkup)
+                           "Tap *Check address* button below to get details on any blockchain address \uD83D\uDC47",
+                    replyMarkup = keyboardMarkup,
+                    parseMode = MARKDOWN)
 
             }
 
@@ -163,12 +164,21 @@ fun main(args: Array<String>) {
             text("\uD83D\uDD0D Check address"){bot, update ->
                 val chatId = update.message?.chat?.id ?: return@text
 
-                val keyboardMarkup = KeyboardReplyMarkup(keyboard = generateUsersButton(CHECK_ADDRESS), resizeKeyboard = true)
+                //val keyboardMarkup = KeyboardReplyMarkup(keyboard = generateUsersButton(CHECK_ADDRESS), resizeKeyboard = true)
+                val inlineKeyboardMarkup = InlineKeyboardMarkup(generateInlineButtons(TICKER_SELECTION))
                 bot.sendMessage(
                     chatId = chatId,
-                    text = "Select coin ticker from the list or type it in the field below",
-                    replyMarkup = keyboardMarkup)
+                    text = "Select coin ticker from the list or type it in the field below \uD83D\uDC47",
+                    replyMarkup = inlineKeyboardMarkup)
             }
+
+            callbackQuery("TickerSelector" ) { bot, update ->
+                update.callbackQuery?.let {
+                    val chatId = it.message?.chat?.id ?: return@callbackQuery
+                    bot.sendMessage(chatId = chatId, text = it.data + "\n" + it.message)
+                }
+            }
+
 
             text("↩️ Back to main screen"){bot, update ->
                 val chatId = update.message?.chat?.id ?: return@text
@@ -187,6 +197,7 @@ fun main(args: Array<String>) {
                     text = "Your location is (${location.latitude}, ${location.longitude})",
                     replyMarkup = ReplyKeyboardRemove()
                 )
+
             }
 
             contact { bot, update, contact ->
@@ -240,7 +251,34 @@ fun main(args: Array<String>) {
     bot.startPolling()
 }
 
-fun generateUsersButton(context: ContextButtons = START): List<List<KeyboardButton>> {
+
+fun generateInlineButtons(context: InlineButtonsContext = TICKER_SELECTION): List<List<InlineKeyboardButton>> {
+    val result: List<List<InlineKeyboardButton>>
+
+    result = when(context){
+        TICKER_SELECTION -> listOf(
+            listOf(
+                InlineKeyboardButton("BTC", callbackData = "TickerSelector"),
+                InlineKeyboardButton("ETH", callbackData = "TickerSelector"),
+                InlineKeyboardButton("XRP", callbackData = "TickerSelector")
+            ),
+            listOf(
+                InlineKeyboardButton("USDT", callbackData = "TickerSelector"),
+                InlineKeyboardButton("BCH", callbackData = "TickerSelector"),
+                InlineKeyboardButton("LTC", callbackData = "TickerSelector")
+            ),
+            listOf(
+                InlineKeyboardButton("EOS", callbackData = "TickerSelector"),
+                InlineKeyboardButton("BNB", callbackData = "TickerSelector"),
+                InlineKeyboardButton("BSV", callbackData = "TickerSelector")
+            )
+        )
+    }
+
+    return result
+}
+
+fun generateUsersButton(context: ContextButtonsContext = START): List<List<KeyboardButton>> {
 
     val result: List<List<KeyboardButton>>
 

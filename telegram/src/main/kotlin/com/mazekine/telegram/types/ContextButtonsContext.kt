@@ -1,6 +1,6 @@
 package com.mazekine.telegram.types
 
-enum class ContextButtons {
+enum class ContextButtonsContext {
     START,
     CHECK_ADDRESS,
     MY_ADDRESSES,
