@@ -33,17 +33,58 @@ import com.mazekine.telegram.types.ContextButtonsContext.START
 import com.mazekine.telegram.types.InlineButtonsContext
 import com.mazekine.telegram.types.InlineButtonsContext.TICKER_SELECTION
 import okhttp3.logging.HttpLoggingInterceptor
-
+import com.natpryce.konfig.*
+import com.natpryce.konfig.ConfigurationProperties.Companion
+import java.io.File
+import com.mazekine.telegram.configuration.*
+import com.mazekine.telegram.logics.cryptocurrencies.KnownCoins
+import com.mazekine.telegram.types.Cryptocurrency
+import com.mazekine.telegram.types.ExpectedInput
+import com.mazekine.telegram.types.ExpectedInput.BLOCKCHAIN_ADDRESS
+import com.mazekine.telegram.types.ExpectedInput.COIN_TICKER
+import com.mazekine.telegram.types.ExpectedInput.NONE
+import java.lang.Exception
+import java.util.logging.Level
+import java.util.logging.Logger
+import kotlin.text.RegexOption.IGNORE_CASE
 
 fun main(args: Array<String>) {
 
+    val config = ConfigurationProperties.systemProperties() overriding
+                EnvironmentVariables() overriding
+                ConfigurationProperties.fromFile(
+                    File(
+                        "telegram/src/main/kotlin/com/mazekine/telegram/configuration/defaults.properties"
+                    )
+                )
+
+    var expectedInput: MutableMap<String, ExpectedInput> = mutableMapOf()
+    expectedInput.logger().level = Level.INFO
+
+    var currentCoin: String = ""
+    var currentAddress: String = ""
+
+    //  Initialize list of known coins
+    try{
+        KnownCoins.initialized
+    }catch(e: Exception){
+        println(e.message)
+    }
+
+    //  Initialize Mazekine connection
+    val mazekineClient = MazekineClient(
+        config[MazekineConfig.api_address].toString(),
+        config[MazekineConfig.api_secret]
+    )
+
     val bot = bot {
 
-        token = "1000920535:AAEyvxvwq7dpCySM_MsopmzuNZbOew1rb-E"
-        timeout = 30
+        token = config[TelegramConfig.token]
+        timeout = config[TelegramConfig.timeout]
         logLevel = HttpLoggingInterceptor.Level.BODY
 
         dispatch {
+/*
             message(Filter.Sticker) { bot, update ->
                 bot.sendMessage(update.message!!.chat.id, text = "You have received an awesome sticker \\o/")
             }
@@ -51,16 +92,114 @@ fun main(args: Array<String>) {
             message(Filter.Reply or Filter.Forward) { bot, update ->
                 bot.sendMessage(update.message!!.chat.id, text = "someone is replying or forwarding messages ...")
             }
+*/
+
+            text(null) {bot, update ->
+                val chatId = update.message?.chat?.id ?: return@text
+
+                when(expectedInput[update.message.from?.username ?: ""]){
+                    COIN_TICKER -> let{
+                        val coin = update.message.text ?: return@let
+                        if (KnownCoins.contains(coin)) {
+                            bot.sendMessage(
+                                chatId = chatId,
+                                text = "You have selected *" +
+                                        (KnownCoins[coin]?.name ?: coin) +
+                                        "* \uD83D\uDC4D" +
+                                        "\n\nPlease input the address to check in the field below.",
+                                parseMode = MARKDOWN,
+                                replyMarkup = KeyboardReplyMarkup(
+                                    generateUsersButton(CHECK_ADDRESS),
+                                    resizeKeyboard = true
+                                )
+                            )
+
+                            currentCoin = coin.toUpperCase().trim()
+                            expectedInput[update.message.from?.username ?: ""] = BLOCKCHAIN_ADDRESS
+                            expectedInput.logger().info(expectedInput.toString())
+                        } else {
+                            bot.sendMessage(
+                                chatId = chatId,
+                                text = "\uD83E\uDD37\u200D♂️ I don't know such coin.\n\nSelect the one from the list or input correct ticker.",
+                                parseMode = MARKDOWN,
+                                replyMarkup = InlineKeyboardMarkup(
+                                    generateInlineButtons(
+                                        TICKER_SELECTION
+                                    )
+                                )
+                            )
+
+                            expectedInput[update.message.from?.username ?: ""] = COIN_TICKER
+                            expectedInput.logger().info(expectedInput.toString())
+                        }
+
+                        return@text
+                    }
+
+                    BLOCKCHAIN_ADDRESS -> let{
+                        currentAddress = update.message.text ?: return@let
+                        val chatId = update.message.chat.id
+                        val keyboardMarkup = KeyboardReplyMarkup(keyboard = generateUsersButton(START), resizeKeyboard = true)
+
+                        if(currentCoin == ""){
+                            bot.sendMessage(
+                                chatId = chatId,
+                                text = "Oops! Something went wrong, try again.\n\n" +
+                                        "Tap *\uD83D\uDD0D Check address* button below to get details on any blockchain address \uD83D\uDC47",
+                                replyMarkup = keyboardMarkup,
+                                parseMode = MARKDOWN)
+
+                            currentAddress = ""
+                            expectedInput[update.message.from?.username ?: ""] = NONE
+                            expectedInput.logger().info(expectedInput.toString())
+                            return@let
+                        }
+
+                        val addressData = mazekineClient.getAddressData(
+                            currentAddress,
+                            currentCoin
+                        )
+
+                        var reply: String = "\uD83E\uDD37\u200D♂️*Address not found*\n\n" +
+                                "Tap *\uD83D\uDD0D Check address* button below to get details on another blockchain address \uD83D\uDC47"
+
+                        addressData?.let{
+                            reply = "✅ Address found\n\n" +
+                                    "The ${KnownCoins[currentCoin]?.name ?: ""} address *$currentAddress* belongs to " +
+                                    "*${it.owner?.firstName ?: ""} ${it.owner?.lastName ?: ""}* and is operated by " +
+                                    "*${it.wallet?.name ?: ""}*"
+                        }
+
+                        bot.sendMessage(
+                            chatId = update.message.chat.id,
+                            text = reply,
+                            replyMarkup = keyboardMarkup,
+                            parseMode = MARKDOWN
+                        )
+
+                        currentAddress = ""
+                        currentCoin = ""
+                        expectedInput[update.message.from?.username ?: ""] = NONE
+                        expectedInput.logger().info(expectedInput.toString())
+
+                        return@text
+                    }
+
+                    NONE -> let{
+                        return@text
+                    }
+                }
+            }
 
             command("check") { bot, update ->
 
-                val strSecret: String = "1ff1f9e1-8d83-4d36-b207-6f8a4d918958"
+                val strSecret: String = config[MazekineConfig.api_secret]
                 val objProfile: ProfileApi = ProfileApi()
                 var txt: kotlin.String
                 val token: kotlin.String
 
                 val objMazekineClient: MazekineClient = MazekineClient(
-                    "https://api.mazekine.com",
+                    config[MazekineConfig.api_address].toString(),
                     strSecret
                 )
 
@@ -97,12 +236,15 @@ fun main(args: Array<String>) {
                 bot.sendMessage(
                     chatId = chatId,
                     text = "Welcome to Mazekine!\n\n" +
-                           "Tap *Check address* button below to get details on any blockchain address \uD83D\uDC47",
+                           "Tap *\uD83D\uDD0D Check address* button below to get details on any blockchain address \uD83D\uDC47",
                     replyMarkup = keyboardMarkup,
                     parseMode = MARKDOWN)
 
+                expectedInput[update.message.from?.username ?: ""] = NONE
+                expectedInput.logger().info(expectedInput.toString())
             }
 
+/*
             command("hello") { bot, update ->
 
                 val result = bot.sendMessage(chatId = update.message!!.chat.id, text = "Hello, world!")
@@ -149,6 +291,7 @@ fun main(args: Array<String>) {
                     bot.sendMessage(chatId = chatId, text = it.data)
                 }
             }
+*/
 
             callbackQuery(createAlertCallbackQueryHandler { bot, update ->
                 update.callbackQuery?.let {
@@ -164,18 +307,75 @@ fun main(args: Array<String>) {
             text("\uD83D\uDD0D Check address"){bot, update ->
                 val chatId = update.message?.chat?.id ?: return@text
 
-                //val keyboardMarkup = KeyboardReplyMarkup(keyboard = generateUsersButton(CHECK_ADDRESS), resizeKeyboard = true)
-                val inlineKeyboardMarkup = InlineKeyboardMarkup(generateInlineButtons(TICKER_SELECTION))
                 bot.sendMessage(
                     chatId = chatId,
-                    text = "Select coin ticker from the list or type it in the field below \uD83D\uDC47",
-                    replyMarkup = inlineKeyboardMarkup)
+                    text = "\uD83D\uDC4C Perfect, let's do it.",
+                    replyMarkup = KeyboardReplyMarkup(
+                        generateUsersButton(CHECK_ADDRESS),
+                        resizeKeyboard = true)
+                )
+
+                bot.sendMessage(
+                    chatId = chatId,
+                    text = "Select any coin ticker from the list below \uD83D\uDC47",
+                    replyMarkup = InlineKeyboardMarkup(
+                        generateInlineButtons(TICKER_SELECTION)
+                    )
+                )
+
+                expectedInput[update.message.from?.username ?: ""] = COIN_TICKER
+                expectedInput.logger().info(expectedInput.toString())
             }
 
             callbackQuery("TickerSelector" ) { bot, update ->
                 update.callbackQuery?.let {
                     val chatId = it.message?.chat?.id ?: return@callbackQuery
-                    bot.sendMessage(chatId = chatId, text = it.data + "\n" + it.message)
+
+                    val commandValidityPattern: Regex = """^TickerSelector\[([a-zA-Z0-9]+)\]$""".toRegex(IGNORE_CASE)
+
+                    if(commandValidityPattern.matches(it.data)){
+                        val coin = commandValidityPattern.find(it.data)!!.groups[1]!!.value
+                        coin?.let {
+                            if(KnownCoins.contains(coin)) {
+                                bot.sendMessage(
+                                    chatId = chatId,
+                                    text = "You have selected *" +
+                                            (KnownCoins[coin]?.name ?: coin) +
+                                            "* \uD83D\uDC4D" +
+                                            "\n\nPlease input the address to check in the field below.",
+                                    parseMode = MARKDOWN,
+                                    replyMarkup = KeyboardReplyMarkup(
+                                        generateUsersButton(CHECK_ADDRESS),
+                                        resizeKeyboard = true
+                                    )
+                                )
+
+                                currentCoin = coin.toUpperCase().trim()
+                                expectedInput[update.callbackQuery.from.username ?: ""] = BLOCKCHAIN_ADDRESS
+                                expectedInput.logger().info(expectedInput.toString())
+                            } else {
+                                bot.sendMessage(
+                                    chatId = chatId,
+                                    text = "\uD83E\uDD37\u200D♂️ I don't know such coin.\n\nSelect the one from the list or input correct ticker.",
+                                    parseMode = MARKDOWN,
+                                    replyMarkup = InlineKeyboardMarkup(generateInlineButtons(TICKER_SELECTION))
+                                )
+
+                                expectedInput[update.callbackQuery.from.username ?: ""] = COIN_TICKER
+                                expectedInput.logger().info(expectedInput.toString())
+                            }
+                        }
+                    } else {
+                        bot.sendMessage(
+                            chatId = chatId,
+                            text = "\uD83E\uDD37\u200D♂️I don't know such coin.\n\nSelect the one from the list.",
+                            parseMode = MARKDOWN,
+                            replyMarkup = InlineKeyboardMarkup(generateInlineButtons(TICKER_SELECTION))
+                        )
+
+                        expectedInput[update.callbackQuery.from.username ?: ""] = COIN_TICKER
+                        expectedInput.logger().info(expectedInput.toString())
+                    }
                 }
             }
 
@@ -186,8 +386,12 @@ fun main(args: Array<String>) {
                 val keyboardMarkup = KeyboardReplyMarkup(keyboard = generateUsersButton(START), resizeKeyboard = true)
                 bot.sendMessage(
                     chatId = chatId,
-                    text = "Tap Check address button below to get details on any blockchain address \uD83D\uDC47",
-                    replyMarkup = keyboardMarkup)
+                    text = "Tap *\uD83D\uDD0D Check address* button below to get details on any blockchain address \uD83D\uDC47",
+                    replyMarkup = keyboardMarkup,
+                    parseMode = MARKDOWN)
+
+                expectedInput[update.message.from?.username ?: ""] = NONE
+                expectedInput.logger().info(expectedInput.toString())
             }
 
             location { bot, update, location ->
@@ -258,19 +462,19 @@ fun generateInlineButtons(context: InlineButtonsContext = TICKER_SELECTION): Lis
     result = when(context){
         TICKER_SELECTION -> listOf(
             listOf(
-                InlineKeyboardButton("BTC", callbackData = "TickerSelector"),
-                InlineKeyboardButton("ETH", callbackData = "TickerSelector"),
-                InlineKeyboardButton("XRP", callbackData = "TickerSelector")
+                InlineKeyboardButton("BTC", callbackData = "TickerSelector[BTC]"),
+                InlineKeyboardButton("ETH", callbackData = "TickerSelector[ETH]"),
+                InlineKeyboardButton("XRP", callbackData = "TickerSelector[XRP]")
             ),
             listOf(
-                InlineKeyboardButton("USDT", callbackData = "TickerSelector"),
-                InlineKeyboardButton("BCH", callbackData = "TickerSelector"),
-                InlineKeyboardButton("LTC", callbackData = "TickerSelector")
+                InlineKeyboardButton("USDT", callbackData = "TickerSelector[USDT]"),
+                InlineKeyboardButton("BCH", callbackData = "TickerSelector[BCH]"),
+                InlineKeyboardButton("LTC", callbackData = "TickerSelector[LTC]")
             ),
             listOf(
-                InlineKeyboardButton("EOS", callbackData = "TickerSelector"),
-                InlineKeyboardButton("BNB", callbackData = "TickerSelector"),
-                InlineKeyboardButton("BSV", callbackData = "TickerSelector")
+                InlineKeyboardButton("EOS", callbackData = "TickerSelector[EOS]"),
+                InlineKeyboardButton("BNB", callbackData = "TickerSelector[BNB]"),
+                InlineKeyboardButton("BSV", callbackData = "TickerSelector[BSV]")
             )
         )
     }
@@ -322,3 +526,6 @@ fun generateButtons(): List<List<InlineKeyboardButton>> {
         listOf(InlineKeyboardButton(text = "Show alert", callbackData = "showAlert"))
     )
 }
+
+inline fun <reified T : Any> T.logger(): Logger =
+    Logger.getLogger(T::class.java.name)

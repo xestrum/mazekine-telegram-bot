@@ -1,0 +1,16 @@
+package com.mazekine.telegram.logics.cryptocurrencies.models
+
+import com.google.gson.annotations.SerializedName
+
+data class Status(@SerializedName("error_message")
+                  val errorMessage: Any? = null,
+                  @SerializedName("elapsed")
+                  val elapsed: Int = 0,
+                  @SerializedName("credit_count")
+                  val creditCount: Int = 0,
+                  @SerializedName("error_code")
+                  val errorCode: Int = 0,
+                  @SerializedName("timestamp")
+                  val timestamp: String = "",
+                  @SerializedName("notice")
+                  val notice: Any? = null)

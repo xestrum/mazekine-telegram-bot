@@ -1,0 +1,8 @@
+package com.mazekine.telegram.logics.cryptocurrencies.models
+
+import com.google.gson.annotations.SerializedName
+
+data class CoinMarketCap(@SerializedName("data")
+                         val data: List<DataItem>?,
+                         @SerializedName("status")
+                         val status: Status?)

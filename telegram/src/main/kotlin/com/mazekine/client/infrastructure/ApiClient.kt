@@ -10,6 +10,9 @@ import okhttp3.ResponseBody
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.Request
 import java.io.File
+import java.math.BigInteger
+import java.nio.charset.Charset
+import java.util.concurrent.TimeUnit.SECONDS
 
 open class ApiClient(val baseUrl: String) {
     companion object {
@@ -34,6 +37,9 @@ open class ApiClient(val baseUrl: String) {
 
         @JvmStatic
         val builder: OkHttpClient.Builder = OkHttpClient.Builder()
+            .readTimeout(30, SECONDS)
+            .connectTimeout(30, SECONDS)
+            .callTimeout(30, SECONDS)
     }
 
     protected inline fun <reified T> requestBody(content: T, mediaType: String = JsonMediaType): RequestBody =
@@ -58,16 +64,18 @@ open class ApiClient(val baseUrl: String) {
             else -> throw UnsupportedOperationException("requestBody currently only supports JSON body and File body.")
         }
 
+
     protected inline fun <reified T: Any?> responseBody(body: ResponseBody?, mediaType: String? = JsonMediaType): T? {
         if(body == null) {
             return null
         }
         val bodyContent = body.string()
+
         if (bodyContent.isEmpty()) {
             return null
         }
         return when(mediaType) {
-            JsonMediaType -> Serializer.moshi.adapter(T::class.java).fromJson(bodyContent)
+            JsonMediaType -> Serializer.moshi.adapter(T::class.java).lenient().fromJson(bodyContent)
             else ->  throw UnsupportedOperationException("responseBody currently only supports JSON body.")
         }
     }
@@ -132,7 +140,12 @@ open class ApiClient(val baseUrl: String) {
             headers.forEach { header -> addHeader(header.key, header.value) }
         }.build()
 
+        println(
+            "[APICLIENT] $request"
+        )
+
         val response = client.newCall(request).execute()
+
         val accept = response.header(ContentType)?.substringBefore(";")?.toLowerCase()
 
         // TODO: handle specific mapping types. e.g. Map<int, Class<?>>

@@ -1,0 +1,90 @@
+package com.mazekine.telegram.logics.cryptocurrencies
+
+import com.mazekine.telegram.types.Cryptocurrency
+import com.mazekine.client.infrastructure.ApiClient
+import com.mazekine.client.infrastructure.ClientException
+import com.mazekine.client.infrastructure.ClientError
+import com.mazekine.client.infrastructure.ServerException
+import com.mazekine.client.infrastructure.ServerError
+import com.mazekine.client.infrastructure.MultiValueMap
+import com.mazekine.client.infrastructure.RequestConfig
+import com.mazekine.client.infrastructure.RequestMethod
+import com.mazekine.client.infrastructure.RequestMethod.GET
+import com.mazekine.client.infrastructure.ResponseType
+import com.mazekine.client.infrastructure.Success
+import com.mazekine.client.infrastructure.toMultiValue
+import com.mazekine.telegram.logics.cryptocurrencies.models.CMCResponse
+
+@Suppress("UNCHECKED_CAST")
+object KnownCoins : ApiClient("https://pro-api.coinmarketcap.com"){
+    private var coins: MutableMap<String, Cryptocurrency> = mutableMapOf()
+    var initialized: Boolean = false
+        private set
+
+    init {
+        println("[KNOWNCOINS] Configuring request to CoinMarketCap...")
+
+        val requestUrl = "/v1/cryptocurrency/map"
+
+        val requestBody: Any? = null
+
+        val requestParameters: MultiValueMap = mutableMapOf<String, List<String>>()
+            .apply {
+                put("listing_status", listOf("active"))
+                put("sort", listOf("cmc_rank"))
+                put("limit", listOf("10"))
+            }
+
+        val requestHeaders: MutableMap<String, String> = mutableMapOf(
+            "Accept" to "application/json",
+            "Accept-Encoding" to "deflate, gzip",
+            "Charset" to "UTF-8",
+            "X-CMC_PRO_API_KEY" to "77284eeb-f419-4307-868f-2899423e87ba"
+        )
+
+        val requestConfig = RequestConfig(
+            GET,
+            requestUrl,
+            query = requestParameters,
+            headers = requestHeaders
+        )
+
+        println("[KNOWNCOINS] Requesting list of known coins from CoinMarketCap...")
+
+        val response = request<CMCResponse>(
+            requestConfig,
+            requestBody
+        )
+
+        when(response.responseType){
+            ResponseType.Success -> let{
+                println("[KNOWNCOINS] Successfully retrieved data from CoinMarketCap. Parsing...")
+
+                ((response as Success<*>).data as CMCResponse).data?.forEach {
+                    this.coins[it.symbol] = Cryptocurrency(it.symbol, it.name)
+                }
+
+                this.initialized = true
+            }
+
+            ResponseType.ClientError -> let {
+                println(
+                    "[KNOWNCOINS] Error " + response.statusCode + "\n" +
+                            ((response as ClientError<*>).body as? String ?: "Unknown client error")
+                )
+            }
+
+            ResponseType.ServerError -> let {
+                println(
+                    "[KNOWNCOINS] Error " + response.statusCode + "\n" +
+                            ((response as ServerError<*>).message ?: "Unknown server error")
+                )
+            }
+
+            ResponseType.Informational -> println("[KNOWNCOINS] Client does not support Informational responses.")
+            ResponseType.Redirection -> println("[KNOWNCOINS] Client does not support Redirection responses.")
+        }
+    }
+
+
+}

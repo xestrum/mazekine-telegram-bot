@@ -1,0 +1,18 @@
+package com.mazekine.telegram.logics.cryptocurrencies.models
+
+import com.google.gson.annotations.SerializedName
+
+data class Fiat(@SerializedName("percent_change_1h")
+                val percentChange1H: Double? = 0.0,
+                @SerializedName("last_updated")
+                val lastUpdated: String? = "",
+                @SerializedName("percent_change_24h")
+                val percentChange24H: Double? = 0.0,
+                @SerializedName("market_cap")
+                val marketCap: Double? = 0.0,
+                @SerializedName("price")
+                val price: Double? = 0.0,
+                @SerializedName("volume_24h")
+                val volume24H: Double? = 0.0,
+                @SerializedName("percent_change_7d")
+                val percentChange7D: Double? = 0.0)

@@ -1,0 +1,32 @@
+package com.mazekine.telegram.logics.cryptocurrencies.models
+
+import com.google.gson.annotations.SerializedName
+
+data class DataItem(@SerializedName("symbol")
+                    val symbol: String = "",
+                    @SerializedName("circulating_supply")
+                    val circulatingSupply: Int? = 0,
+                    @SerializedName("last_updated")
+                    val lastUpdated: String? = "",
+                    @SerializedName("total_supply")
+                    val totalSupply: Int? = 0,
+                    @SerializedName("cmc_rank")
+                    val cmcRank: Int? = 0,
+                    @SerializedName("platform")
+                    val platform: Any? = null,
+                    @SerializedName("tags")
+                    val tags: List<String>??,
+                    @SerializedName("date_added")
+                    val dateAdded: String? = "",
+                    @SerializedName("quote")
+                    val quote: Quote?,
+                    @SerializedName("num_market_pairs")
+                    val numMarketPairs: Int? = 0,
+                    @SerializedName("name")
+                    val name: String = "",
+                    @SerializedName("max_supply")
+                    val maxSupply: Int? = 0,
+                    @SerializedName("id")
+                    val id: Int = 0,
+                    @SerializedName("slug")
+                    val slug: String? = "")
